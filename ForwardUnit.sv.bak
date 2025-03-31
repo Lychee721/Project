@@ -1,0 +1,47 @@
+`timescale 1ns/1ps
+
+// ForwardUnit 模块：
+// 中文：前递逻辑，用于在EX阶段对 rs1, rs2 是否需要从EX/MEM或MEM/WB前递进行判断
+// English: Determines if the current EX stage instruction's operands 
+// should be forwarded from EX/MEM or MEM/WB pipeline registers.
+
+module ForwardUnit(
+    // EX阶段当前指令(rs1, rs2)
+    input  logic [4:0] ex_rs1_idx,
+    input  logic [4:0] ex_rs2_idx,
+
+    // EX/MEM流水寄存器信息
+    input  logic       ex_mem_regWrite,
+    input  logic [4:0] ex_mem_rd_idx,
+
+    // MEM/WB流水寄存器信息
+    input  logic       mem_wb_regWrite,
+    input  logic [4:0] mem_wb_rd_idx,
+
+    // 输出：前递选择信号
+    // 00 => no forward, 
+    // 10 => forward from EX/MEM,
+    // 01 => forward from MEM/WB
+    output logic [1:0] forwardA,
+    output logic [1:0] forwardB
+);
+
+    always_comb begin
+        // 默认不前递
+        forwardA = 2'b00;
+        forwardB = 2'b00;
+
+        // 检查 EX/MEM
+        if(ex_mem_regWrite && (ex_mem_rd_idx != 5'd0) && (ex_mem_rd_idx == ex_rs1_idx))
+            forwardA = 2'b10;
+        if(ex_mem_regWrite && (ex_mem_rd_idx != 5'd0) && (ex_mem_rd_idx == ex_rs2_idx))
+            forwardB = 2'b10;
+
+        // 检查 MEM/WB
+        if(mem_wb_regWrite && (mem_wb_rd_idx != 5'd0) && (mem_wb_rd_idx == ex_rs1_idx))
+            forwardA = 2'b01;
+        if(mem_wb_regWrite && (mem_wb_rd_idx != 5'd0) && (mem_wb_rd_idx == ex_rs2_idx))
+            forwardB = 2'b01;
+    end
+
+endmodule

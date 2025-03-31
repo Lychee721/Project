@@ -1,0 +1,210 @@
+`timescale 1ns/1ps
+
+// ID_stage 模块：
+// 1) 从 IF/ID 流水寄存器接收指令 instr_in
+// 2) 解析 (opcode, funct3, funct7, rd, rs1, rs2)
+// 3) 根据指令类型设置控制信号：reg_write, mem_read, mem_write, alu_ctrl, use_imm, branch, jal 等
+// 4) 计算对应的立即数 imm (对 I型, S型, B型, U型, J型指令分别符号扩展)
+// 5) 提供 rs1_idx, rs2_idx 给外部用于寄存器读取
+// 6) 最终会在 ID/EX 流水寄存器中保存, 供 EX_stage 使用
+//
+// Chinese: 本模块完整译码, 包括自定义指令 (ReLU, MatMul, VecAdd, Mpool), 并设置各控制信号.
+// English: This module performs full instruction decode, including custom instructions for ReLU, MatMul, VecAdd, Mpool, generating all control signals.
+
+module ID_stage(
+    input  logic        clk,
+    input  logic        reset,
+    input  logic [31:0] instr_in,     // Instruction from IF/ID pipeline register
+
+    // 读到的寄存器数据 (在顶层可能通过 RegFile 获取)
+    input  logic [31:0] rs1_data,
+    input  logic [31:0] rs2_data,
+
+    // 输出：给下游 EX or ID/EX pipeline
+    output logic [4:0]  rs1_idx,      // 寄存器源1地址
+    output logic [4:0]  rs2_idx,      // 寄存器源2地址
+    output logic [4:0]  rd_idx,       // 目标寄存器
+    output logic        reg_write,    // 是否写寄存器
+    output logic        mem_read,     // 是否读内存 (Load)
+    output logic        mem_write,    // 是否写内存 (Store)
+    output logic        use_imm,      // ALU第二操作数是否来自立即数
+    output logic [3:0]  alu_ctrl,     // ALU控制编码
+    output logic [31:0] imm,          // 译码出的立即数
+    output logic        branch,       // 是否为branch指令
+    output logic        jal           // 是否为JAL指令 Jump And Link
+);
+
+    // 解析指令字段
+    logic [6:0] opcode;
+    logic [2:0] funct3;
+    logic [6:0] funct7;
+
+    assign opcode = instr_in[6:0];
+    assign rd_idx = instr_in[11:7];
+    assign funct3 = instr_in[14:12];
+    assign rs1_idx= instr_in[19:15];
+    assign rs2_idx= instr_in[24:20];
+    assign funct7 = instr_in[31:25];
+
+    // ===================
+    // 默认信号初始
+    // ===================
+    logic        reg_write_d;  // 内部组合变量, 最终赋给 reg_write
+    logic        mem_read_d;
+    logic        mem_write_d;
+    logic        use_imm_d;
+    logic [3:0]  alu_ctrl_d;
+    logic [31:0] imm_d;
+    logic        branch_d;
+    logic        jal_d;
+
+    // 给出默认值
+    always_comb begin
+        reg_write_d  = 1'b0;
+        mem_read_d   = 1'b0;
+        mem_write_d  = 1'b0;
+        use_imm_d    = 1'b0;
+        alu_ctrl_d   = 4'd0;
+        imm_d        = 32'd0;
+        branch_d     = 1'b0;
+        jal_d        = 1'b0;
+    end
+
+    // ================
+    // 解析指令类型
+    // ================
+    always_comb begin
+
+        // 根据 opcode 区分大类
+        case(opcode)
+            
+				7'b0110011: begin
+                // R-type (e.g. ADD, SUB, AND, OR, XOR)
+                // reg_write=1, use_imm=0, mem_read=0, mem_write=0
+                reg_write_d  = 1'b1;
+                use_imm_d    = 1'b0;
+                // 根据 funct3, funct7 设置 alu_ctrl
+                
+					 unique case(funct3)
+                    3'b000: begin // ADD/SUB
+                       
+                     
+								if(funct7==7'b0100000)
+                            
+									 alu_ctrl_d = 4'd1; // SUB
+                        else
+                            
+									 alu_ctrl_d = 4'd0; // ADD
+                    end
+                    
+						  3'b111: alu_ctrl_d = 4'd2; // AND
+                    3'b110: alu_ctrl_d = 4'd3; // OR
+                    3'b100: alu_ctrl_d = 4'd4; // XOR
+                    
+						  
+						  default: alu_ctrl_d = 4'd0;
+                
+					 endcase
+            end
+
+            
+				7'b0010011: begin
+                // I-type (ADDI, ANDI, ORI, XORI等)
+                // 取instr_in[31:20]做12位立即数符号扩展
+                reg_write_d = 1'b1;
+                use_imm_d   = 1'b1;
+                imm_d       = {{20{instr_in[31]}}, instr_in[31:20]};
+                // 根据funct3判别具体操作
+                case(funct3)
+                    
+						  3'b000: alu_ctrl_d = 4'd0; // ADDI
+                    3'b111: alu_ctrl_d = 4'd2; // ANDI => ALU_AND
+                    3'b110: alu_ctrl_d = 4'd3; // ORI => ALU_OR
+                    3'b100: alu_ctrl_d = 4'd4; // XORI => ALU_XOR
+                    
+						  default: alu_ctrl_d = 4'd0;
+                
+					 endcase
+            end
+
+            7'b0000011: begin
+                // Load (e.g. LW)
+                // imm=instr_in[31:20]
+                reg_write_d = 1'b1;
+                mem_read_d  = 1'b1;
+                use_imm_d   = 1'b1;
+                imm_d       = {{20{instr_in[31]}}, instr_in[31:20]};
+                alu_ctrl_d  = 4'd0; // base+offset
+            end
+
+            7'b0100011: begin
+                // Store (SW)
+                // imm= {instr_in[31:25], instr_in[11:7]}
+                mem_write_d= 1'b1;
+                use_imm_d  = 1'b1;
+                imm_d      = {{20{instr_in[31]}}, instr_in[31:25], instr_in[11:7]};
+                alu_ctrl_d = 4'd0; 
+            end
+
+            7'b1100011: begin
+                // Branch (e.g. BEQ)
+                // imm= { instr_in[31], instr_in[7], instr_in[30:25], instr_in[11:8], 1'b0 }
+                branch_d   = 1'b1;
+                // 需要在 EX阶段比较
+                // 这里先设置 ALU= SUB or XOR
+                alu_ctrl_d = 4'd1; // SUB => check zero
+                imm_d = {{19{instr_in[31]}}, instr_in[31], instr_in[7],
+                         instr_in[30:25], instr_in[11:8], 1'b0};
+            end
+
+            7'b1101111: begin
+                // JAL
+                reg_write_d= 1'b1;
+                jal_d      = 1'b1;
+                // imm= { instr_in[31], instr_in[19:12], instr_in[20], instr_in[30:21], 1'b0 }
+                imm_d = {{11{instr_in[31]}}, instr_in[31], instr_in[19:12], instr_in[20], instr_in[30:21], 1'b0};
+                // ALU不一定要用, 但可用 SUB=0
+                alu_ctrl_d = 4'd0;
+            end
+
+            
+				
+				
+				
+				// 自定义指令
+            // opcode= 0x0B => 7'b0001011 (示例)
+            7'b0001011: begin
+                // ReLU, MatMul, VecAdd, Mpool
+                // funct3 决定具体操作
+                reg_write_d = 1'b1;  // 结果写回
+                
+					 case(funct3)
+                    
+						  3'b000: alu_ctrl_d = 4'h8; // ReLU
+                    3'b001: alu_ctrl_d = 4'h9; // MatMul
+                    3'b010: alu_ctrl_d = 4'ha; // VecAdd
+                    3'b011: alu_ctrl_d = 4'hb; // Mpool
+                    
+						  default: alu_ctrl_d= 4'd0;
+                endcase
+            end
+
+            // 其他 => 当NOP处理
+            default: begin
+                // 所有control信号默认0
+            end
+        endcase
+    end
+
+    // 最终赋值到输出
+    assign reg_write  = reg_write_d;
+    assign mem_read   = mem_read_d;
+    assign mem_write  = mem_write_d;
+    assign use_imm    = use_imm_d;
+    assign alu_ctrl   = alu_ctrl_d;
+    assign imm        = imm_d;
+    assign branch     = branch_d;
+    assign jal        = jal_d;
+
+	 
+endmodule

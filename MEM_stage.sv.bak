@@ -1,0 +1,44 @@
+`timescale 1ns/1ps
+
+module MEM_stage(
+    
+	 input  logic [31:0] addr,
+    input  logic [31:0] store_data, //Store instructions
+    input  logic        mem_read,	// load
+    input  logic        mem_write, 	// store
+    
+	 output logic [31:0] mem_out   
+);
+    
+	 logic [31:0] data_mem[0:255];
+    
+	 integer i;
+    
+	 initial begin
+        
+		  for(i=0; i<256; i++) // increase by 1
+			  
+			  data_mem[i] = 32'd0;
+    end
+
+    logic [7:0] index = addr[9:2];
+
+    
+	 always_comb begin
+        
+		  if(mem_read)
+            
+				mem_out = data_mem[index];
+        else
+            
+				mem_out = 32'd0;
+    end
+
+    
+	 always_comb begin
+        
+		  if(mem_write)
+            
+				data_mem[index] = store_data;
+    end
+endmodule

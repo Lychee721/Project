@@ -1,0 +1,26 @@
+`timescale 1ns/1ps
+
+// WB_stage：which data to wb_data, EX or MEM
+module WB_stage(
+    
+	 input  logic [31:0] alu_result,
+    input  logic [31:0] mem_out,
+    input  logic        mem_read,   // 当为1时，写回来自mem_out，否则来自alu_result
+    
+	 output logic [31:0] wb_data
+);
+
+    
+	 always_comb begin
+        
+		  if (mem_read)
+            
+				wb_data = mem_out;
+        
+		  else
+            
+				wb_data = alu_result;
+     
+	 
+	 end
+endmodule

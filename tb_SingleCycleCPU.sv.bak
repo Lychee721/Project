@@ -1,0 +1,38 @@
+`timescale 1ns/1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Module: tb_SingleCycleCPU
+// Function: Testbench for the SingleCycleCPU module. It generates a slow clock,
+//           asserts reset initially, and then runs the simulation for a number of cycles.
+// 中文说明: 本测试平台用于仿真单周期 CPU 模块。产生50ns周期的时钟，初始时复位，然后运行仿真，
+//         你可以观察PC和寄存器文件的变化来验证单周期设计的正确性。
+//////////////////////////////////////////////////////////////////////////////////
+
+module tb_SingleCycleCPU;
+    logic clk;
+    logic reset;
+
+    // 实例化单周期 CPU
+    SingleCycleCPU cpu(
+        .clk(clk),
+        .reset(reset)
+    );
+
+    // 产生50ns周期时钟
+    always #25 clk = ~clk;
+
+    initial begin
+        clk = 0;
+        reset = 1;
+        #50;   // 保持复位50ns（一个时钟周期）
+        reset = 0;
+        // 运行足够多的时钟周期以完成测试
+        #2000;
+        $display("Single Cycle Simulation ended at time %0t ns", $time);
+        $finish;
+    end
+
+    initial begin
+        $dumpfile("tb_SingleCycleCPU.vcd");
+        $dumpvars(0, tb_SingleCycleCPU);
+    end
+endmodule

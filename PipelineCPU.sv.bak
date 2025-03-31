@@ -1,0 +1,257 @@
+`timescale 1ns/1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Module: PipelineCPU
+// Function: Top-level module integrating a complete 5-stage pipelined RISC-V CPU
+//           with hazard detection (load-use stall), forwarding, and branch flush.
+//           Supports custom instructions: ReLU, MatMul, VecAdd, and MPOOL.
+// 中文说明: 此顶层模块整合了IF、ID、EX、MEM、WB各阶段、流水寄存器、冒险检测与前递、分支冲刷机制，
+//         支持自定义指令（ReLU、矩阵乘法、向量加法、池化+激活）。
+//////////////////////////////////////////////////////////////////////////////////
+
+module PipelineCPU(
+    input  logic clk,
+    input  logic reset
+);
+
+    // ======================================================
+    // 1. IF Stage and IF/ID Pipeline Register
+    // ======================================================
+    logic [31:0] pc_if, instr_if;
+    logic [31:0] pc_ifid, instr_ifid;
+    logic stall;
+    logic flush_ifid;
+    logic pc_sel;          // 1：采用外部pc_in（分支或跳转目标）；0：顺序执行
+    logic [31:0] pc_in;    // 分支/跳转目标地址
+
+    IF_stage if_stage_u(
+        .clk      (clk),
+        .reset    (reset),
+        .stall    (stall),
+        .flush    (flush_ifid),
+        .pc_sel   (pc_sel),
+        .pc_in    (pc_in),
+        .instr_out(instr_if),
+        .pc_out   (pc_if)
+    );
+
+    pipeline_reg_IF_ID if_id_reg_u(
+        .clk      (clk),
+        .reset    (reset),
+        .stall    (stall),
+        .flush    (flush_ifid),
+        .pc_in    (pc_if),
+        .instr_in (instr_if),
+        .pc_out   (pc_ifid),
+        .instr_out(instr_ifid)
+    );
+
+    // ======================================================
+    // 2. Register File and ID Stage
+    // ======================================================
+    logic [31:0] rs1_data, rs2_data;
+    logic [4:0]  id_rs1_idx, id_rs2_idx, id_rd_idx;
+    logic        id_reg_write, id_mem_read, id_mem_write, id_use_imm;
+    logic [3:0]  id_alu_ctrl;
+    logic [31:0] id_imm;
+    logic        id_branch, id_jal;
+
+    RegisterFile regfile_u(
+        .clk      (clk),
+        .rs1_idx  (id_rs1_idx),
+        .rs2_idx  (id_rs2_idx),
+        .rs1_data (rs1_data),
+        .rs2_data (rs2_data),
+        .we       (mem_wb_reg_write),
+        .rd_idx   (mem_wb_rd_idx),
+        .rd_data  (wb_final_data)
+    );
+
+    ID_stage id_stage_u(
+        .clk         (clk),
+        .reset       (reset),
+        .instr_in    (instr_ifid),
+        .rs1_data    (rs1_data),
+        .rs2_data    (rs2_data),
+        .rs1_idx     (id_rs1_idx),
+        .rs2_idx     (id_rs2_idx),
+        .rd_idx      (id_rd_idx),
+        .reg_write   (id_reg_write),
+        .mem_read    (id_mem_read),
+        .mem_write   (id_mem_write),
+        .use_imm     (id_use_imm),
+        .alu_ctrl    (id_alu_ctrl),
+        .imm         (id_imm),
+        .branch      (id_branch),
+        .jal         (id_jal)
+    );
+
+    // ======================================================
+    // 3. Hazard Detection and ID/EX Pipeline Register
+    // ======================================================
+    // 在ID/EX流水寄存器中传递 load-read 控制信号以供HazardUnit检测
+    logic [31:0] id_ex_rs1_val, id_ex_rs2_val, id_ex_imm;
+    logic [3:0]  id_ex_alu_ctrl;
+    logic        id_ex_reg_write, id_ex_mem_read, id_ex_mem_write, id_ex_use_imm;
+    logic        id_ex_branch, id_ex_jal;
+    logic [4:0]  id_ex_rd_idx;
+    // 同时传递ID阶段的寄存器索引，用于ForwardUnit
+    logic [4:0]  id_ex_rs1_idx, id_ex_rs2_idx;
+
+    pipeline_reg_ID_EX id_ex_reg_u(
+        .clk           (clk),
+        .reset         (reset),
+        .rs1_val_in    (rs1_data),
+        .rs2_val_in    (rs2_data),
+        .imm_in        (id_imm),
+        .alu_ctrl_in   (id_alu_ctrl),
+        .reg_write_in  (id_reg_write),
+        .mem_read_in   (id_mem_read),
+        .mem_write_in  (id_mem_write),
+        .use_imm_in    (id_use_imm),
+        .branch_in     (id_branch),
+        .jal_in        (id_jal),
+        .rd_idx_in     (id_rd_idx),
+        .rs1_val_out   (id_ex_rs1_val),
+        .rs2_val_out   (id_ex_rs2_val),
+        .imm_out       (id_ex_imm),
+        .alu_ctrl_out  (id_ex_alu_ctrl),
+        .reg_write_out (id_ex_reg_write),
+        .mem_read_out  (id_ex_mem_read),
+        .mem_write_out (id_ex_mem_write),
+        .use_imm_out   (id_ex_use_imm),
+        .branch_out    (id_ex_branch),
+        .jal_out       (id_ex_jal),
+        .rd_idx_out    (id_ex_rd_idx)
+    );
+    // 将ID阶段的寄存器索引传递出去用于前递检测
+    assign id_ex_rs1_idx = id_rs1_idx;
+    assign id_ex_rs2_idx = id_rs2_idx;
+
+    // ======================================================
+    // 4. Forwarding and EX Stage
+    // ======================================================
+    logic [1:0] forwardA, forwardB;
+    ForwardUnit forward_u(
+        .ex_rs1_idx      (id_ex_rs1_idx),
+        .ex_rs2_idx      (id_ex_rs2_idx),
+        .ex_mem_regWrite (ex_mem_reg_write),
+        .ex_mem_rd_idx   (ex_mem_rd_idx),
+        .mem_wb_regWrite (mem_wb_reg_write),
+        .mem_wb_rd_idx   (mem_wb_rd_idx),
+        .forwardA        (forwardA),
+        .forwardB        (forwardB)
+    );
+
+    logic [31:0] operandA, operandB;
+    always_comb begin
+        case (forwardA)
+            2'b10: operandA = ex_mem_alu_result;
+            2'b01: operandA = wb_final_data;
+            default: operandA = id_ex_rs1_val;
+        endcase
+    end
+    always_comb begin
+        case (forwardB)
+            2'b10: operandB = ex_mem_alu_result;
+            2'b01: operandB = wb_final_data;
+            default: operandB = id_ex_rs2_val;
+        endcase
+    end
+
+    // 若使用立即数，则EX阶段的第二操作数为立即数
+    logic [31:0] ex_opB;
+    assign ex_opB = (id_ex_use_imm) ? id_ex_imm : operandB;
+
+    logic [31:0] ex_alu_result;
+    EX_stage ex_stage_u(
+        .rs1_val   (operandA),
+        .rs2_val   (ex_opB),
+        .use_imm   (1'b0),
+        .alu_ctrl  (id_ex_alu_ctrl),
+        .imm       (32'd0),
+        .alu_result(ex_alu_result)
+    );
+
+    // ======================================================
+    // 5. Branch and Jump Handling (in EX Stage)
+    // ======================================================
+    logic branch_taken;
+    // BEQ: 当branch信号为1且rs1==rs2时判定分支成立
+    assign branch_taken = id_ex_branch && (id_ex_rs1_val == id_ex_rs2_val);
+    // 分支目标地址：计算为 IF/ID阶段PC + (立即数左移1)
+    logic [31:0] branch_target;
+    assign branch_target = pc_ifid + (id_ex_imm << 1);
+    // JAL目标地址：计算为 IF/ID阶段PC + 立即数
+    logic [31:0] jal_target;
+    assign jal_target = pc_ifid + id_ex_imm;
+    assign pc_sel = branch_taken || id_ex_jal;
+    assign pc_in  = branch_taken ? branch_target : jal_target;
+    // 若分支或跳转成立，则冲刷IF/ID流水寄存器
+    assign flush_ifid = branch_taken || id_ex_jal;
+
+    // ======================================================
+    // 6. EX/MEM Pipeline Register
+    // ======================================================
+    logic [31:0] ex_mem_alu_result;
+    logic [31:0] ex_mem_rs2_val;
+    logic        ex_mem_reg_write, ex_mem_mem_read, ex_mem_mem_write;
+    logic [4:0]  ex_mem_rd_idx;
+    pipeline_reg_EX_MEM ex_mem_reg_u(
+        .clk         (clk),
+        .reset       (reset),
+        .alu_result_in(ex_alu_result),
+        .rs2_val_in  (id_ex_rs2_val),
+        .reg_write_in(id_ex_reg_write),
+        .mem_read_in (id_ex_mem_read),
+        .mem_write_in(id_ex_mem_write),
+        .rd_idx_in   (id_ex_rd_idx),
+        .alu_result_out(ex_mem_alu_result),
+        .rs2_val_out   (ex_mem_rs2_val),
+        .reg_write_out (ex_mem_reg_write),
+        .mem_read_out  (ex_mem_mem_read),
+        .mem_write_out (ex_mem_mem_write),
+        .rd_idx_out    (ex_mem_rd_idx)
+    );
+
+    // ======================================================
+    // 7. MEM Stage
+    // ======================================================
+    logic [31:0] mem_data_out;
+    MEM_stage mem_stage_u(
+        .clk       (clk),
+        .addr      (ex_mem_alu_result),
+        .store_data(ex_mem_rs2_val),
+        .mem_read  (ex_mem_mem_read),
+        .mem_write (ex_mem_mem_write),
+        .mem_out   (mem_data_out)
+    );
+
+    // ======================================================
+    // 8. MEM/WB Pipeline Register
+    // ======================================================
+    logic [31:0] mem_wb_data_out;
+    logic        mem_wb_reg_write;
+    logic [4:0]  mem_wb_rd_idx;
+    pipeline_reg_MEM_WB mem_wb_reg_u(
+        .clk           (clk),
+        .reset         (reset),
+        .wb_data_in    (mem_data_out),
+        .reg_write_in  (ex_mem_reg_write),
+        .rd_idx_in     (ex_mem_rd_idx),
+        .mem_wb_data_out(mem_wb_data_out),
+        .reg_write_out (mem_wb_reg_write),
+        .rd_idx_out    (mem_wb_rd_idx)
+    );
+
+    // ======================================================
+    // 9. WB Stage
+    // ======================================================
+    logic [31:0] wb_final_data;
+    WB_stage wb_stage_u(
+        .alu_result (ex_mem_alu_result),
+        .mem_data   (mem_data_out),
+        .mem_read   (ex_mem_mem_read),
+        .wb_data    (wb_final_data)
+    );
+
+endmodule

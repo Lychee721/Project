@@ -1,0 +1,38 @@
+`timescale 1ns/1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Module: RegisterFile
+// Function: Implements a 32×32位 register file with two read ports and one write port.
+//           Register x0 is hardwired to 0.
+// 中文说明: 寄存器文件模块，32个32位寄存器，具有两个读端口和一个写端口；x0始终为0。
+//////////////////////////////////////////////////////////////////////////////////
+
+module RegisterFile(
+    input  logic        clk,
+    input  logic [4:0]  rs1_idx,
+    input  logic [4:0]  rs2_idx,
+    output logic [31:0] rs1_data,
+    output logic [31:0] rs2_data,
+    input  logic        we,          // 写使能
+    input  logic [4:0]  rd_idx,      // 写目标寄存器索引
+    input  logic [31:0] rd_data      // 写入数据
+);
+
+    reg [31:0] regs [0:31];
+    integer i;
+    initial begin
+        for(i = 0; i < 32; i = i+1)
+            regs[i] = 32'd0;
+    end
+
+    // 读操作（组合逻辑）
+    assign rs1_data = (rs1_idx == 5'd0) ? 32'd0 : regs[rs1_idx];
+    assign rs2_data = (rs2_idx == 5'd0) ? 32'd0 : regs[rs2_idx];
+
+    // 写操作（在时钟上升沿触发）
+    always_ff @(posedge clk) begin
+        if(we && (rd_idx != 5'd0))
+            regs[rd_idx] <= rd_data;
+        regs[0] <= 32'd0;  // x0始终为0
+    end
+
+endmodule

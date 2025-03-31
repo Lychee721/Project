@@ -1,0 +1,129 @@
+`timescale 1ns/1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Module: SingleCycleCPU
+// Function: A simple single-cycle RISC-V CPU that fetches an instruction from
+//           an internal memory, decodes it, executes the ALU operation, and writes 
+//           back the result in a single clock cycle.
+// 中文说明: 单周期 CPU 模块，该设计在一个时钟周期内完成指令的取指、译码、执行和写回操作。
+//         它从内部指令存储器中读取指令，对指令进行译码后执行简单的 ALU 运算（支持 ADDI、R-type
+//         的 ADD/SUB 以及自定义的 ReLU 指令），并在同一周期内更新寄存器文件。
+//////////////////////////////////////////////////////////////////////////////////
+
+module SingleCycleCPU(
+    input logic clk,
+    input logic reset
+);
+
+    // --------------------------
+    // 1. 程序计数器和指令存储器
+    // --------------------------
+    logic [31:0] PC; // 程序计数器
+    logic [31:0] instr_mem [0:255]; // 指令存储器，256 条指令，每条 32 位
+    logic [31:0] instruction; // 当前取出的指令
+
+    // 在仿真初期加载指令存储器数据
+    initial begin
+        $readmemh("instr_mem.hex", instr_mem);
+    end
+
+    // PC 更新：在每个时钟周期更新 PC（单周期设计时钟周期较长）
+    always_ff @(posedge clk or posedge reset) begin
+        if (reset)
+            PC <= 32'd0;
+        else
+            PC <= PC + 32'd4;
+    end
+
+    // 从指令存储器取指：假设指令4字节对齐，使用 PC 的低 8 位作为索引
+    assign instruction = instr_mem[PC[9:2]];
+
+    // --------------------------
+    // 2. 寄存器文件
+    // --------------------------
+    // 简单的寄存器文件：32 个 32 位寄存器
+    logic [31:0] regs [0:31];
+    integer i;
+    always_ff @(posedge clk or posedge reset) begin
+        if (reset) begin
+            for (i = 0; i < 32; i = i + 1)
+                regs[i] <= 32'd0;
+        end else begin
+            // 写回操作在后面的写回阶段中执行（见下文）
+        end
+    end
+
+    // 读操作采用连续赋值（不视为驱动）
+    wire [31:0] rs1_data = (instruction[19:15] == 5'd0) ? 32'd0 : regs[instruction[19:15]];
+    wire [31:0] rs2_data = (instruction[24:20] == 5'd0) ? 32'd0 : regs[instruction[24:20]];
+
+    // --------------------------
+    // 3. 指令译码
+    // --------------------------
+    // RISC-V 基本字段
+    logic [6:0] opcode;
+    logic [4:0] rd;
+    logic [2:0] funct3;
+    logic [4:0] rs1, rs2;
+    logic [6:0] funct7;
+    logic [31:0] imm;
+
+    always_comb begin
+        opcode = instruction[6:0];
+        rd     = instruction[11:7];
+        funct3 = instruction[14:12];
+        rs1    = instruction[19:15];
+        rs2    = instruction[24:20];
+        funct7 = instruction[31:25];
+        // 对于 I-type 指令（如 ADDI），立即数是 instruction[31:20]，符号扩展
+        imm = {{20{instruction[31]}}, instruction[31:20]};
+    end
+
+    // --------------------------
+    // 4. ALU 运算
+    // --------------------------
+    // 简单 ALU 模块内嵌于此处（组合逻辑实现）
+    // 支持：
+    //   - I-type: ADDI（opcode 0010011）：rs1 + imm
+    //   - R-type: ADD (opcode 0110011, funct3 = 000, funct7 != 0100000) 或 SUB (funct7 = 0100000)
+    //   - 自定义指令: 假设自定义指令使用 opcode 0001011 且 funct3 = 000 实现 ReLU：如果 rs1 数据为负则输出 0，否则输出 rs1 数据
+    logic [31:0] alu_result;
+
+    always_comb begin
+        // 默认
+        alu_result = 32'd0;
+        if (opcode == 7'b0010011) begin  // ADDI
+            alu_result = rs1_data + imm;
+        end else if (opcode == 7'b0110011) begin // R-type
+            if (funct3 == 3'b000) begin
+                if (funct7 == 7'b0100000)
+                    alu_result = rs1_data - rs2_data; // SUB
+                else
+                    alu_result = rs1_data + rs2_data; // ADD
+            end
+            // 其他 R-type 指令可以扩展
+        end else if (opcode == 7'b0001011) begin // 自定义指令：ReLU
+            if (funct3 == 3'b000) begin
+                if ($signed(rs1_data) < 0)
+                    alu_result = 32'd0;
+                else
+                    alu_result = rs1_data;
+            end
+        end else begin
+            alu_result = 32'd0;
+        end
+    end
+
+    // --------------------------
+    // 5. 写回操作
+    // --------------------------
+    // 在一个时钟周期内将 ALU 运算结果写回寄存器文件（如果 rd != 0）
+    always_ff @(posedge clk or posedge reset) begin
+        if (!reset) begin
+            if ((opcode == 7'b0010011) || (opcode == 7'b0110011) || (opcode == 7'b0001011)) begin
+                if (rd != 5'd0)
+                    regs[rd] <= alu_result;
+            end
+        end
+    end
+
+endmodule

@@ -1,0 +1,408 @@
+$date
+	Tue Mar 18 11:17:11 2025
+$end
+$version
+	ModelSim Version 2020.1
+$end
+$timescale
+	1ps
+$end
+
+$scope module tb_ALU $end
+$var reg 32 ! operand_a [31:0] $end
+$var reg 32 " operand_b [31:0] $end
+$var reg 4 # alu_ctrl [3:0] $end
+$var reg 1 $ use_imm $end
+$var reg 32 % imm [31:0] $end
+$var reg 32 & alu_result [31:0] $end
+
+$scope module uut $end
+$var parameter 4 ' ALU_ADD $end
+$var parameter 4 ( ALU_SUB $end
+$var parameter 4 ) ALU_AND $end
+$var parameter 4 * ALU_OR $end
+$var parameter 4 + ALU_XOR $end
+$var parameter 4 , ALU_RELU $end
+$var parameter 4 - ALU_MATMUL $end
+$var parameter 4 . ALU_VECADD $end
+$var parameter 4 / ALU_MPOOL $end
+$var wire 1 0 rs1_val [31] $end
+$var wire 1 1 rs1_val [30] $end
+$var wire 1 2 rs1_val [29] $end
+$var wire 1 3 rs1_val [28] $end
+$var wire 1 4 rs1_val [27] $end
+$var wire 1 5 rs1_val [26] $end
+$var wire 1 6 rs1_val [25] $end
+$var wire 1 7 rs1_val [24] $end
+$var wire 1 8 rs1_val [23] $end
+$var wire 1 9 rs1_val [22] $end
+$var wire 1 : rs1_val [21] $end
+$var wire 1 ; rs1_val [20] $end
+$var wire 1 < rs1_val [19] $end
+$var wire 1 = rs1_val [18] $end
+$var wire 1 > rs1_val [17] $end
+$var wire 1 ? rs1_val [16] $end
+$var wire 1 @ rs1_val [15] $end
+$var wire 1 A rs1_val [14] $end
+$var wire 1 B rs1_val [13] $end
+$var wire 1 C rs1_val [12] $end
+$var wire 1 D rs1_val [11] $end
+$var wire 1 E rs1_val [10] $end
+$var wire 1 F rs1_val [9] $end
+$var wire 1 G rs1_val [8] $end
+$var wire 1 H rs1_val [7] $end
+$var wire 1 I rs1_val [6] $end
+$var wire 1 J rs1_val [5] $end
+$var wire 1 K rs1_val [4] $end
+$var wire 1 L rs1_val [3] $end
+$var wire 1 M rs1_val [2] $end
+$var wire 1 N rs1_val [1] $end
+$var wire 1 O rs1_val [0] $end
+$var wire 1 P rs2_val [31] $end
+$var wire 1 Q rs2_val [30] $end
+$var wire 1 R rs2_val [29] $end
+$var wire 1 S rs2_val [28] $end
+$var wire 1 T rs2_val [27] $end
+$var wire 1 U rs2_val [26] $end
+$var wire 1 V rs2_val [25] $end
+$var wire 1 W rs2_val [24] $end
+$var wire 1 X rs2_val [23] $end
+$var wire 1 Y rs2_val [22] $end
+$var wire 1 Z rs2_val [21] $end
+$var wire 1 [ rs2_val [20] $end
+$var wire 1 \ rs2_val [19] $end
+$var wire 1 ] rs2_val [18] $end
+$var wire 1 ^ rs2_val [17] $end
+$var wire 1 _ rs2_val [16] $end
+$var wire 1 ` rs2_val [15] $end
+$var wire 1 a rs2_val [14] $end
+$var wire 1 b rs2_val [13] $end
+$var wire 1 c rs2_val [12] $end
+$var wire 1 d rs2_val [11] $end
+$var wire 1 e rs2_val [10] $end
+$var wire 1 f rs2_val [9] $end
+$var wire 1 g rs2_val [8] $end
+$var wire 1 h rs2_val [7] $end
+$var wire 1 i rs2_val [6] $end
+$var wire 1 j rs2_val [5] $end
+$var wire 1 k rs2_val [4] $end
+$var wire 1 l rs2_val [3] $end
+$var wire 1 m rs2_val [2] $end
+$var wire 1 n rs2_val [1] $end
+$var wire 1 o rs2_val [0] $end
+$var wire 1 p use_imm $end
+$var wire 1 q alu_ctrl [3] $end
+$var wire 1 r alu_ctrl [2] $end
+$var wire 1 s alu_ctrl [1] $end
+$var wire 1 t alu_ctrl [0] $end
+$var wire 1 u imm [31] $end
+$var wire 1 v imm [30] $end
+$var wire 1 w imm [29] $end
+$var wire 1 x imm [28] $end
+$var wire 1 y imm [27] $end
+$var wire 1 z imm [26] $end
+$var wire 1 { imm [25] $end
+$var wire 1 | imm [24] $end
+$var wire 1 } imm [23] $end
+$var wire 1 ~ imm [22] $end
+$var wire 1 !! imm [21] $end
+$var wire 1 "! imm [20] $end
+$var wire 1 #! imm [19] $end
+$var wire 1 $! imm [18] $end
+$var wire 1 %! imm [17] $end
+$var wire 1 &! imm [16] $end
+$var wire 1 '! imm [15] $end
+$var wire 1 (! imm [14] $end
+$var wire 1 )! imm [13] $end
+$var wire 1 *! imm [12] $end
+$var wire 1 +! imm [11] $end
+$var wire 1 ,! imm [10] $end
+$var wire 1 -! imm [9] $end
+$var wire 1 .! imm [8] $end
+$var wire 1 /! imm [7] $end
+$var wire 1 0! imm [6] $end
+$var wire 1 1! imm [5] $end
+$var wire 1 2! imm [4] $end
+$var wire 1 3! imm [3] $end
+$var wire 1 4! imm [2] $end
+$var wire 1 5! imm [1] $end
+$var wire 1 6! imm [0] $end
+$var reg 32 7! alu_result [31:0] $end
+$var reg 32 8! opA [31:0] $end
+$var reg 32 9! opB [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+#0
+$dumpvars
+b1111 !
+b1010 "
+b0 #
+0$
+b0 %
+b11001 &
+b11001 7!
+b1111 8!
+b1010 9!
+b0 '
+b1 (
+b10 )
+b11 *
+b100 +
+b1000 ,
+b1001 -
+b1010 .
+b1011 /
+1O
+1N
+1M
+1L
+0K
+0J
+0I
+0H
+0G
+0F
+0E
+0D
+0C
+0B
+0A
+0@
+0?
+0>
+0=
+0<
+0;
+0:
+09
+08
+07
+06
+05
+04
+03
+02
+01
+00
+0o
+1n
+0m
+1l
+0k
+0j
+0i
+0h
+0g
+0f
+0e
+0d
+0c
+0b
+0a
+0`
+0_
+0^
+0]
+0\
+0[
+0Z
+0Y
+0X
+0W
+0V
+0U
+0T
+0S
+0R
+0Q
+0P
+0p
+0t
+0s
+0r
+0q
+06!
+05!
+04!
+03!
+02!
+01!
+00!
+0/!
+0.!
+0-!
+0,!
+0+!
+0*!
+0)!
+0(!
+0'!
+0&!
+0%!
+0$!
+0#!
+0"!
+0!!
+0~
+0}
+0|
+0{
+0z
+0y
+0x
+0w
+0v
+0u
+$end
+#10000
+b10100 !
+b101 "
+b1 #
+1o
+0n
+1m
+0l
+0O
+0N
+0L
+1K
+b10100 8!
+b101 9!
+1t
+b1111 7!
+b1111 &
+#20000
+b11111111111111111111111111111011 !
+b0 "
+b1000 #
+0o
+0m
+1O
+1N
+0M
+1L
+1J
+1I
+1H
+1G
+1F
+1E
+1D
+1C
+1B
+1A
+1@
+1?
+1>
+1=
+1<
+1;
+1:
+19
+18
+17
+16
+15
+14
+13
+12
+11
+10
+b11111111111111111111111111111011 8!
+b0 9!
+0t
+1q
+b0 7!
+b0 &
+#30000
+b1000000100000001100000100 !
+b101000001100000011100001000 "
+b1001 #
+1l
+1g
+1f
+1e
+1^
+1]
+1W
+1U
+0O
+0N
+1M
+0L
+0K
+0J
+0I
+0H
+0E
+0D
+0C
+0B
+0A
+0@
+0?
+0=
+0<
+0;
+0:
+09
+08
+06
+05
+04
+03
+02
+01
+00
+b1000000100000001100000100 8!
+b101000001100000011100001000 9!
+1t
+b10011000101100010101100110010 7!
+b10011000101100010101100110010 &
+#40000
+b11001000000000011001000 !
+b1001011000000000110010000 "
+b1010 #
+0l
+1k
+1h
+0f
+0e
+0^
+1\
+1Z
+0U
+0M
+1L
+1I
+1H
+0G
+0F
+0>
+1=
+1:
+19
+07
+b11001000000000011001000 8!
+b1001011000000000110010000 9!
+0t
+1s
+b10011000101100000001001011000 7!
+b1100100000000001001011000 7!
+b1100100000000001001011000 &
+#50000
+b10000001000000000010111110000 !
+b1011 #
+0L
+1K
+1J
+1G
+1E
+0=
+09
+13
+b10000001000000000010111110000 8!
+1t
+b100000 7!
+b100000 &

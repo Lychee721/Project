@@ -1,0 +1,81 @@
+`timescale 1ns/1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Module: tb_ALU
+// Function: Testbench for the ALU (EX_stage) to verify arithmetic/logic operations.
+// 中文说明: 本测试平台用于单独测试EX_stage（即ALU）的功能，包括加法、减法、ReLU、
+//         矩阵乘法、向量加法以及池化+激活操作。通过$display输出结果并生成波形文件。
+//////////////////////////////////////////////////////////////////////////////////
+
+module tb_ALU;
+    // 信号声明
+    logic [31:0] operand_a, operand_b;
+    logic [3:0]  alu_ctrl;
+    logic        use_imm;
+    logic [31:0] imm;
+    logic [31:0] alu_result;
+
+    // 实例化 EX_stage 模块（作为 ALU）
+    EX_stage uut (
+        .rs1_val(operand_a),
+        .rs2_val(operand_b),
+        .use_imm(use_imm),
+        .alu_ctrl(alu_ctrl),
+        .imm(imm),
+        .alu_result(alu_result)
+    );
+
+    initial begin
+        // Test 1: ADD
+        operand_a = 32'd15;
+        operand_b = 32'd10;
+        use_imm = 1'b0;
+        alu_ctrl = 4'd0; // ALU_ADD
+        imm = 32'd0;
+        #10;
+        $display("Test ADD: %d + %d = %d", operand_a, operand_b, alu_result);
+        
+        // Test 2: SUB
+        operand_a = 32'd20;
+        operand_b = 32'd5;
+        alu_ctrl = 4'd1; // ALU_SUB
+        #10;
+        $display("Test SUB: %d - %d = %d", operand_a, operand_b, alu_result);
+        
+        // Test 3: ReLU (if negative, output 0)
+        operand_a = -32'd5;
+        operand_b = 32'd0;
+        alu_ctrl = 4'h8; // ALU_RELU
+        #10;
+        $display("Test ReLU: input = %d, output = %d", operand_a, alu_result);
+        
+        // Test 4: MatMul
+        // 假定 operand_a 和 operand_b 分别打包了 4 个8位无符号数
+        operand_a = 32'h01020304; // 示例矩阵A
+        operand_b = 32'h05060708; // 示例矩阵B
+        alu_ctrl = 4'h9; // ALU_MATMUL
+        #10;
+        $display("Test MatMul: result = 0x%h", alu_result);
+        
+        // Test 5: VecAdd
+        // 假定 operand_a 和 operand_b 各包含两个16位数
+        operand_a = {16'd100, 16'd200};
+        operand_b = {16'd300, 16'd400};
+        alu_ctrl = 4'ha; // ALU_VECADD
+        #10;
+        $display("Test VecAdd: High=%d, Low=%d", alu_result[31:16], alu_result[15:0]);
+        
+        // Test 6: MPOOL
+        // 假定 operand_a 中存储4个8位有符号数，例: 0xF0 (-16), 0x20 (32), 0x05 (5), 0x10 (16)
+        operand_a = 32'h102005F0;
+        alu_ctrl = 4'hb; // ALU_MPOOL
+        #10;
+        $display("Test MPOOL: result = 0x%h", alu_result);
+        
+        $finish;
+    end
+
+    initial begin
+        $dumpfile("tb_ALU.vcd");
+        $dumpvars(0, tb_ALU);
+    end
+endmodule

@@ -1,0 +1,24 @@
+// IF_stage.sv
+module IF_stage(
+    input  logic        clk,
+    input  logic        reset,
+    input  logic [31:0] pc_in,
+    output logic [31:0] instruction,
+    output logic [31:0] pc_next
+);
+  // 指令存储器（ROM）: 256 x 32位
+  reg [31:0] instr_mem [0:255];
+
+  // 初始化指令存储器：可以用外部文件加载，此处示例内嵌初始化
+  initial begin
+      // 示例：用十六进制方式存入几条指令（真实项目中需替换为完整指令集）
+      instr_mem[0] = 32'h00A00533; // R-type: add x10,x0,x10 (示例)
+      instr_mem[1] = 32'h40B00533; // R-type: sub x10,x0,x11 (示例)
+      instr_mem[2] = 32'h00010113; // I-type: addi x2,x2,0 (示例)
+      // 其他指令……
+  end
+
+  // 简单的PC寄存器更新由顶层模块控制，这里仅取出指令
+  assign instruction = instr_mem[pc_in[7:0]]; // 只使用低8位地址（256条指令）
+  assign pc_next = pc_in + 32'd4;
+endmodule
