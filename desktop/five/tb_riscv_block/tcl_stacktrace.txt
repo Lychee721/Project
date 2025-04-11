@@ -1,0 +1,10 @@
+Thu Apr 10 15:05:21 +0800 2025
+Trace back: invalid command name "::.dockbar.tbf28.wave.tb.searchwidget.search"
+    while executing
+"::.dockbar.tbf28.wave.tb.searchwidget.search _checkLength"
+    (in namespace inscope "::iwidgets::Entryfield" script line 1)
+    invoked from within
+"namespace inscope ::iwidgets::Entryfield {::.dockbar.tbf28.wave.tb.searchwidget.search _checkLength}"
+    (command bound to event)
+  <2:D:/questasim64_10.6c/win64/tk8.6/bgerror.tcl:106: ::tkerror {invalid command name "::.dockbar.tbf28.wave.tb.searchwidget.search"}
+  <1:eval:1: ::tk::dialog::error::bgerror {invalid command name "::.dockbar.tbf28.wave.tb.searchwidget.search"}

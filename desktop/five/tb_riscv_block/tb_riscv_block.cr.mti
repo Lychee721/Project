@@ -1,0 +1,36 @@
+C:/Users/Administrator/Desktop/five/riscv_block.v {1 {vlog -work work -vopt -stats=none C:/Users/Administrator/Desktop/five/riscv_block.v
+QuestaSim-64 vlog 10.6c Compiler 2017.07 Jul 26 2017
+-- Compiling module riscv_block
+
+Top level modules:
+	riscv_block
+
+} {} {}} C:/Users/Administrator/Desktop/five/hazard_unit.v {1 {vlog -work work -vopt -stats=none C:/Users/Administrator/Desktop/five/hazard_unit.v
+QuestaSim-64 vlog 10.6c Compiler 2017.07 Jul 26 2017
+-- Compiling module hazard_unit
+
+Top level modules:
+	hazard_unit
+
+} {} {}} C:/Users/Administrator/Desktop/five/riscv_block_tb.v {1 {vlog -work work -vopt -stats=none C:/Users/Administrator/Desktop/five/riscv_block_tb.v
+QuestaSim-64 vlog 10.6c Compiler 2017.07 Jul 26 2017
+-- Compiling module tb_riscv_block
+
+Top level modules:
+	tb_riscv_block
+
+} {} {}} C:/Users/Administrator/Desktop/five/forwarding_unit.v {1 {vlog -work work -vopt -stats=none C:/Users/Administrator/Desktop/five/forwarding_unit.v
+QuestaSim-64 vlog 10.6c Compiler 2017.07 Jul 26 2017
+-- Compiling module forwarding_unit
+
+Top level modules:
+	forwarding_unit
+
+} {} {}} C:/Users/Administrator/Desktop/five/alu.v {1 {vlog -work work -vopt -stats=none C:/Users/Administrator/Desktop/five/alu.v
+QuestaSim-64 vlog 10.6c Compiler 2017.07 Jul 26 2017
+-- Compiling module alu
+
+Top level modules:
+	alu
+
+} {} {}}

@@ -1,0 +1,90 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+dC:/Users/Administrator/Desktop/five/tb_riscv_block
+valu
+Z0 VDg1SIo80bB@j0V0VzS_@n1
+r1
+!s85 0
+31
+!i10b 1
+!s100 ?Rc@3cieBS0SYDL_59K@@0
+IeEEQ]Oo^^5jlcV0LSa^NC3
+Z1 dC:/Users/Administrator/Desktop/single/tb_riscv_single
+w1744273734
+8C:/Users/Administrator/Desktop/single/alu.v
+FC:/Users/Administrator/Desktop/single/alu.v
+L0 2
+Z2 OL;L;10.6c;65
+Z3 !s108 1744353630.000000
+!s107 C:/Users/Administrator/Desktop/single/alu.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|C:/Users/Administrator/Desktop/single/alu.v|
+!i113 0
+Z4 o-work work -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+Z5 tCvgOpt 0
+vctrl
+R0
+r1
+!s85 0
+31
+!i10b 1
+!s100 WY9UYZ@7i8RQ0F2G6loVo0
+ICXo<IkHYXHjNOh]n4lKjW3
+R1
+w1744273779
+8C:/Users/Administrator/Desktop/single/ctrl.v
+FC:/Users/Administrator/Desktop/single/ctrl.v
+L0 2
+R2
+R3
+!s107 C:/Users/Administrator/Desktop/single/ctrl.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|C:/Users/Administrator/Desktop/single/ctrl.v|
+!i113 0
+R4
+R5
+vriscv_single_block
+R0
+r1
+!s85 0
+31
+!i10b 1
+!s100 mWDTzml^3m=<NYmfgYKd91
+I[8YiP@E]lhGe8l3Wgfc[g0
+R1
+w1744352655
+8C:/Users/Administrator/Desktop/single/riscv_single_block.v
+FC:/Users/Administrator/Desktop/single/riscv_single_block.v
+L0 1
+R2
+R3
+!s107 C:/Users/Administrator/Desktop/single/riscv_single_block.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|C:/Users/Administrator/Desktop/single/riscv_single_block.v|
+!i113 0
+R4
+R5
+vtb_riscv_single
+R0
+r1
+!s85 0
+31
+!i10b 1
+!s100 ;oh[3DV3ideDln[hZQS823
+IC`BSz39zl?C;IIgI;32nf0
+R1
+w1744353619
+8C:/Users/Administrator/Desktop/single/tb_riscv_single.v
+FC:/Users/Administrator/Desktop/single/tb_riscv_single.v
+L0 3
+R2
+R3
+!s107 C:/Users/Administrator/Desktop/single/tb_riscv_single.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|C:/Users/Administrator/Desktop/single/tb_riscv_single.v|
+!i113 0
+R4
+R5

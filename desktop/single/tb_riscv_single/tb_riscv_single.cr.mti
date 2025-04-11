@@ -1,0 +1,29 @@
+C:/Users/Administrator/Desktop/single/ctrl.v {1 {vlog -work work -vopt -stats=none C:/Users/Administrator/Desktop/single/ctrl.v
+QuestaSim-64 vlog 10.6c Compiler 2017.07 Jul 26 2017
+-- Compiling module ctrl
+
+Top level modules:
+	ctrl
+
+} {} {}} C:/Users/Administrator/Desktop/single/tb_riscv_single.v {1 {vlog -work work -vopt -stats=none C:/Users/Administrator/Desktop/single/tb_riscv_single.v
+QuestaSim-64 vlog 10.6c Compiler 2017.07 Jul 26 2017
+-- Compiling module tb_riscv_single
+
+Top level modules:
+	tb_riscv_single
+
+} {} {}} C:/Users/Administrator/Desktop/single/alu.v {1 {vlog -work work -vopt -stats=none C:/Users/Administrator/Desktop/single/alu.v
+QuestaSim-64 vlog 10.6c Compiler 2017.07 Jul 26 2017
+-- Compiling module alu
+
+Top level modules:
+	alu
+
+} {} {}} C:/Users/Administrator/Desktop/single/riscv_single_block.v {1 {vlog -work work -vopt -stats=none C:/Users/Administrator/Desktop/single/riscv_single_block.v
+QuestaSim-64 vlog 10.6c Compiler 2017.07 Jul 26 2017
+-- Compiling module riscv_single_block
+
+Top level modules:
+	riscv_single_block
+
+} {} {}}

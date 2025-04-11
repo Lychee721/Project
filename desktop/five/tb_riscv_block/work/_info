@@ -1,0 +1,110 @@
+m255
+K4
+z2
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+dC:/Users/Administrator/Desktop/lab12/modelsim/single_cycle_alu_tb
+valu
+Z0 VDg1SIo80bB@j0V0VzS_@n1
+r1
+!s85 0
+31
+!i10b 1
+!s100 gEZlW2zE:a;`jAb4U:oMY1
+IL64gP8n:U9i94aiR3XeVB2
+Z1 dC:/Users/Administrator/Desktop/five/tb_riscv_block
+w1744268005
+8C:/Users/Administrator/Desktop/five/alu.v
+FC:/Users/Administrator/Desktop/five/alu.v
+L0 1
+Z2 OL;L;10.6c;65
+Z3 !s108 1744354130.000000
+!s107 C:/Users/Administrator/Desktop/five/alu.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|C:/Users/Administrator/Desktop/five/alu.v|
+!i113 0
+Z4 o-work work -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+Z5 tCvgOpt 0
+vforwarding_unit
+R0
+r1
+!s85 0
+31
+!i10b 1
+!s100 2M4bDnBc7eJeOBM>c2in`3
+ICImV0@BiHb>m2PYNg:nbC3
+R1
+w1744267517
+8C:/Users/Administrator/Desktop/five/forwarding_unit.v
+FC:/Users/Administrator/Desktop/five/forwarding_unit.v
+L0 2
+R2
+R3
+!s107 C:/Users/Administrator/Desktop/five/forwarding_unit.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|C:/Users/Administrator/Desktop/five/forwarding_unit.v|
+!i113 0
+R4
+R5
+vhazard_unit
+R0
+r1
+!s85 0
+31
+!i10b 1
+!s100 1A1lTA74OOH^DdI?_ZaTE3
+IW`6BEdJQBjJR5Je^VnVNU3
+R1
+w1744266033
+8C:/Users/Administrator/Desktop/five/hazard_unit.v
+FC:/Users/Administrator/Desktop/five/hazard_unit.v
+L0 2
+R2
+R3
+!s107 C:/Users/Administrator/Desktop/five/hazard_unit.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|C:/Users/Administrator/Desktop/five/hazard_unit.v|
+!i113 0
+R4
+R5
+vriscv_block
+R0
+r1
+!s85 0
+31
+!i10b 1
+!s100 af0[kL^6kD^hTS`L6c>Ff3
+IH;QH>N=jKjInhi[=UIBd80
+R1
+w1744353970
+8C:/Users/Administrator/Desktop/five/riscv_block.v
+FC:/Users/Administrator/Desktop/five/riscv_block.v
+L0 1
+R2
+R3
+!s107 C:/Users/Administrator/Desktop/five/riscv_block.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|C:/Users/Administrator/Desktop/five/riscv_block.v|
+!i113 0
+R4
+R5
+vtb_riscv_block
+R0
+r1
+!s85 0
+31
+!i10b 1
+!s100 NL?9dcf[AaDT3jXRBM^H]1
+IBB:iC<Z_7RAbO0N[<Ic]22
+R1
+w1744354022
+8C:/Users/Administrator/Desktop/five/riscv_block_tb.v
+FC:/Users/Administrator/Desktop/five/riscv_block_tb.v
+L0 4
+R2
+R3
+!s107 C:/Users/Administrator/Desktop/five/riscv_block_tb.v|
+!s90 -reportprogress|300|-work|work|-vopt|-stats=none|C:/Users/Administrator/Desktop/five/riscv_block_tb.v|
+!i113 0
+R4
+R5
